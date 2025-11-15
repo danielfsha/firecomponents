@@ -250,7 +250,8 @@ export default function FirecrawlInput() {
                   } z-10 ${
                     activeIndex === idx ? "text-black" : ""
                   } cursor-pointer`,
-                  activeIndex !== idx && "grayscale-100"
+                  activeIndex !== idx && "grayscale-100",
+                  "focus:ring-orange-200 focus-visible:ring-orange-200 focus-visible:ring-[3px]"
                 )}
                 style={{ fontSize: "14px" }}
                 onClick={() => setActiveIndex(idx)}
