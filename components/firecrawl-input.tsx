@@ -12,6 +12,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import AnimatedButton from "./animated-button";
+import { Button } from "./ui/button";
 
 const scrapeIcon = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -158,7 +159,7 @@ export const PrimaryButton: React.FC<
 export default function FirecrawlInput() {
   const [value, setValue] = useState("");
   const [activeIndex, setActiveIndex] = useState<number | null>(0);
-  const navItemsRef = useRef<(HTMLDivElement | null)[]>([]);
+  const navItemsRef = useRef<(HTMLButtonElement | null)[]>([]);
 
   // Motion values for nav indicator
   const activeLeft = useMotionValue(0);
@@ -241,10 +242,10 @@ export default function FirecrawlInput() {
 
           <div className="relative flex items-center justify-center space-x-1 bg-black/[3.92%] rounded-[10px] p-[1px] pr-0 shadow-[inset_0_0.75px_0.75px_rgba(0,0,0,0.02),inset_0_0.25px_0.25px_rgba(0,0,0,0.02)]">
             {ACTIONS.map((action, idx) => (
-              <div
+              <Button
                 key={action.name}
                 className={cn(
-                  `relative p-2 h-[32px] flex items-center justify-start space-x-[6px] capitalize text-gray-500 ${
+                  `bg-transparent hover:bg-transparent relative p-2 h-[32px] flex items-center justify-start space-x-[6px] capitalize text-gray-500 ${
                     action.isNew ? "pr-1.5" : "pr-3"
                   } z-10 ${
                     activeIndex === idx ? "text-black" : ""
@@ -275,7 +276,7 @@ export default function FirecrawlInput() {
                     {action.tooltipContent}
                   </TooltipContent>
                 </Tooltip>
-              </div>
+              </Button>
             ))}
             {/* Active nav indicator */}
             <motion.div
@@ -318,7 +319,7 @@ export default function FirecrawlInput() {
                 />
               </svg>
             ) : (
-              <p className="min-w-[110px]">Start scraping</p>
+              <p className="min-w-[130px]">Start scraping</p>
             )}
           </AnimatedButton>
         </div>
