@@ -16,6 +16,39 @@ const SOCIALS = [
   { id: "farcster", name: "Farcster", icon: "farcster" },
 ];
 
+const SCREENS = [
+  {
+    title: "Connect wallet",
+    description: "Connect your wallet to sign in.",
+    skeletons: [2 / 3, 1 / 2, 1 / 4],
+  },
+  {
+    title: "email confirmation",
+    description: "Enter the confirmation code sent to your email.",
+    skeletons: [2 / 3, 1 / 2, 1 / 4],
+  },
+  {
+    title: "passkey creation",
+    description: "Create a passkey for secure sign in.",
+    skeletons: [2 / 3, 1 / 2, 1 / 4],
+  },
+  {
+    title: "Email",
+    description: "Enter your email to proceed.",
+    skeletons: [2 / 3, 1 / 2, 1 / 4],
+  },
+  {
+    title: "Phone",
+    description: "Enter your phone number to continue.",
+    skeletons: [2 / 3, 3 / 5],
+  },
+  {
+    title: "Passkey",
+    description: "Set up your passkey for secure sign in.",
+    skeletons: [2 / 3, 1 / 2, 3 / 4],
+  },
+];
+
 // -- Generic Button Components --
 export const PrimaryButton: React.FC<
   React.ButtonHTMLAttributes<HTMLButtonElement>

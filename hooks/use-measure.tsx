@@ -1,7 +1,12 @@
 import { RefObject, useEffect, useState } from "react";
 
-const useMeasure = <T extends HTMLElement>({ ref }: { ref: RefObject<T> }) => {
+const useMeasure = <T extends HTMLElement | null>({
+  ref,
+}: {
+  ref: RefObject<T>;
+}) => {
   const [height, setHeight] = useState(0);
+  const [width, setWidth] = useState(0);
 
   useEffect(() => {
     const observer = new ResizeObserver((entries) => {
@@ -9,6 +14,7 @@ const useMeasure = <T extends HTMLElement>({ ref }: { ref: RefObject<T> }) => {
         const rect = entry.target.getBoundingClientRect();
 
         setHeight(rect.height);
+        setWidth(rect.width);
       }
     });
 
@@ -19,7 +25,7 @@ const useMeasure = <T extends HTMLElement>({ ref }: { ref: RefObject<T> }) => {
     return () => observer.disconnect();
   }, [ref]);
 
-  return { height };
+  return { height, width };
 };
 
 export default useMeasure;
