@@ -2,22 +2,53 @@
 
 import Image from "next/image";
 import { motion, MotionConfig, AnimatePresence } from "motion/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import useMeasure from "@/hooks/use-measure";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, ArrowRight, XIcon } from "lucide-react";
 import { Input } from "./ui/input";
 
-// -- Social Providers (unique `id` ensures stable key) --
-const SOCIALS = [
+// TYPES
+type StepId =
+  | "email"
+  | "email-confirm"
+  | "phone"
+  | "phone-confirm"
+  | "passkey"
+  | "passkey-confirm"
+  | "wallet-select"
+  | "wallet-confirm";
+
+interface Step {
+  id: StepId;
+  label: string;
+  main: boolean;
+}
+
+// Social Providers
+const SOCIALS: { id: string; name: string; icon: string }[] = [
   { id: "google", name: "Google", icon: "google" },
   { id: "discord", name: "Discord", icon: "discord" },
   { id: "github", name: "Github", icon: "github" },
   { id: "apple", name: "Apple", icon: "apple" },
-  { id: "farcaster", name: "Farcster", icon: "farcaster" },
+  { id: "farcaster", name: "Farcaster", icon: "farcaster" },
 ];
 
-// -- Generic Button Components --
+// Only the main auth tabs
+const STEPS: Step[] = [
+  { id: "email", label: "Email", main: true },
+  { id: "email-confirm", label: "Confirm Email", main: false },
+  { id: "phone", label: "Phone", main: true },
+  { id: "phone-confirm", label: "Confirm Phone", main: false },
+  { id: "passkey", label: "Passkey", main: true },
+  { id: "passkey-confirm", label: "Confirm Passkey", main: false },
+  { id: "wallet-select", label: "Select Wallet", main: false },
+  { id: "wallet-confirm", label: "Wallet Connected", main: false },
+];
+
+const MAIN_STEPS = STEPS.filter((s) => s.main);
+
+// Button components
 export const PrimaryButton: React.FC<
   React.ButtonHTMLAttributes<HTMLButtonElement>
 > = ({ children, className, ...props }) => (
@@ -35,11 +66,12 @@ export const PrimaryButton: React.FC<
 
 export const SecondaryButton: React.FC<
   React.ButtonHTMLAttributes<HTMLButtonElement> & { isActive?: boolean }
-> = ({ children, className, ...props }) => (
+> = ({ children, className, isActive, ...props }) => (
   <button
     type="button"
     className={cn(
       "px-3 rounded-lg font-medium flex items-center justify-center w-fit select-none transition-colors",
+      isActive ? "bg-white/10" : "",
       className
     )}
     {...props}
@@ -48,44 +80,86 @@ export const SecondaryButton: React.FC<
   </button>
 );
 
-// -- Tabs Component --
+// Tabs — only for main steps, no header duplication
 export const Tabs: React.FC<{
-  setCurrentStep: (step: number) => void;
-  currentStep: number;
-}> = ({ setCurrentStep, currentStep }) => {
-  const steps = ["email", "phone", "passkey"];
-  return (
-    <div className="relative flex items-center justify-center gap-1 w-full bg-[#171717] p-1 rounded-xl">
-      {steps.map((tab, idx) => (
-        <SecondaryButton
-          key={tab}
-          isActive={currentStep === idx}
-          className="flex-1 relative z-10 hover:bg-transparent h-[40px]"
-          onClick={() => setCurrentStep(idx)}
-        >
-          {tab}
-        </SecondaryButton>
-      ))}
-      <motion.div
-        animate={{ x: `${100 * currentStep}%` }}
-        className="absolute left-0 h-[40px] w-[33%] rounded-lg bg-white/5 pointer-events-none"
-        transition={{ type: "spring", bounce: 0, duration: 0.3 }}
-      />
-    </div>
-  );
-};
+  setCurrentStep: (stepId: StepId) => void;
+  currentStepId: StepId;
+}> = ({ setCurrentStep, currentStepId }) => (
+  <div className="relative flex items-center justify-center gap-1 w-full bg-[#171717] p-1 rounded-xl">
+    {MAIN_STEPS.map((tab) => (
+      <SecondaryButton
+        key={tab.id}
+        isActive={currentStepId === tab.id}
+        className="flex-1 relative z-10 hover:bg-transparent h-[40px]"
+        onClick={() => setCurrentStep(tab.id)}
+      >
+        {tab.label}
+      </SecondaryButton>
+    ))}
+    <motion.div
+      layoutId="tab-indicator"
+      animate={{
+        x: `${100 * MAIN_STEPS.findIndex((t) => t.id === currentStepId)}%`,
+      }}
+      className="absolute left-0 h-[40px] w-[33%] rounded-lg bg-white/5 pointer-events-none"
+      transition={{ type: "spring", bounce: 0, duration: 0.3 }}
+    />
+  </div>
+);
 
-const StepOne = () => {
+// Main header (tab pages only)
+const DefaultHeader: React.FC<{ setOpen: (open: boolean) => void }> = ({
+  setOpen,
+}) => (
+  <div className="w-full flex items-center justify-between p-2">
+    <h2 className="text-lg font-semibold pl-3">Sign in</h2>
+    <SecondaryButton
+      onClick={() => setOpen(false)}
+      className="w-[32px] h-[32px] rounded-full p-0 bg-[#171717]"
+    >
+      <XIcon className="size-5" />
+    </SecondaryButton>
+  </div>
+);
+
+// Subpage/detail header (detail pages only)
+const PageHeader: React.FC<{
+  onBack: () => void;
+  title: string;
+  setOpen: (open: boolean) => void;
+}> = ({ onBack, title, setOpen }) => (
+  <div className="w-full flex items-center justify-between p-2">
+    <SecondaryButton onClick={onBack} className="bg-[#171717]">
+      <ArrowLeft />
+    </SecondaryButton>
+    <h2 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-lg font-semibold">
+      {title}
+    </h2>
+    <SecondaryButton
+      onClick={() => setOpen(false)}
+      className="w-[32px] h-[32px] rounded-full p-0 bg-[#171717]"
+    >
+      <XIcon />
+    </SecondaryButton>
+  </div>
+);
+
+// --- Step Page Components — No header inside! ---
+
+const LoginWithEmailPage: React.FC<{ onNext: () => void }> = ({ onNext }) => {
   const [value, setValue] = useState("");
-
-  const handleInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setValue(e.target.value);
-  }, []);
-
+  const handleInput = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setValue(e.target.value),
+    []
+  );
   return (
     <motion.form
       layoutId="form"
       className="flex items-center justify-between bg-[#171717] rounded-[16px] p-2"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (value) onNext();
+      }}
     >
       <Input
         value={value}
@@ -98,30 +172,41 @@ const StepOne = () => {
         )}
         style={{ fontSize: "16px" }}
       />
-      <PrimaryButton
-        type="submit"
-        className={cn(
-          "rounded-[12px]",
-          value === "" ? "bg-[#FFFFFF]/5" : "cursor-not-allowed"
-        )}
-      >
-        <ArrowRight className="text-white" />
-      </PrimaryButton>
+      <motion.div layoutId="form-button">
+        <PrimaryButton
+          type="submit"
+          className={cn("rounded-[12px]", value === "" ? "bg-[#FFFFFF]/5" : "")}
+          disabled={value === ""}
+        >
+          <ArrowRight className="text-white" />
+        </PrimaryButton>
+      </motion.div>
     </motion.form>
   );
 };
 
-const StepTwo = () => {
+const EmailConfirmPage: React.FC = () => (
+  <motion.div className="flex flex-col items-center justify-center gap-4 py-4">
+    <p className="text-center text-lg">
+      Check your inbox for a confirmation link.
+    </p>
+  </motion.div>
+);
+
+const LoginWithPhonePage: React.FC<{ onNext: () => void }> = ({ onNext }) => {
   const [value, setValue] = useState("");
-
-  const handleInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setValue(e.target.value);
-  }, []);
-
+  const handleInput = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setValue(e.target.value),
+    []
+  );
   return (
     <motion.form
       layoutId="form"
       className="flex items-center justify-between bg-[#171717] rounded-[16px] p-2"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (value) onNext();
+      }}
     >
       <Input
         value={value}
@@ -134,192 +219,158 @@ const StepTwo = () => {
         )}
         style={{ fontSize: "16px" }}
       />
-      <PrimaryButton
-        type="submit"
-        className={cn(
-          "rounded-[12px]",
-          value === "" ? "bg-[#FFFFFF]/5" : "cursor-not-allowed"
-        )}
-      >
-        <ArrowRight className="text-white" />
-      </PrimaryButton>
+      <motion.div layoutId="form-button">
+        <PrimaryButton
+          type="submit"
+          className={cn("rounded-[12px]", value === "" ? "bg-[#FFFFFF]/5" : "")}
+          disabled={value === ""}
+        >
+          <ArrowRight className="text-white" />
+        </PrimaryButton>
+      </motion.div>
     </motion.form>
   );
 };
 
-const StepThree = () => {
-  return (
-    <motion.form
-      layoutId="form"
-      className="flex items-center justify-between bg-[#171717] rounded-[16px] p-2"
-    >
-      <div className="flex items-center gap-2 px-2">
-        <Image
-          src="/icons/finger-print.svg"
-          alt="passkey"
-          width={24}
-          height={24}
-        />
-        <p
-          className={cn(
-            "focus-visible:border-none focus-visible:ring-0",
-            "outline-none border-none shadow-none focus:outline-none focus:ring-0 focus:border-none text-[#262626]",
-            "font-xl text-[#6E6E6E]"
-          )}
-          style={{ fontSize: "18px" }}
-        >
-          Login with passkey
-        </p>
-      </div>
+const PhoneConfirmPage: React.FC = () => (
+  <motion.div className="flex flex-col items-center justify-center gap-4 py-4">
+    <p className="text-center text-lg">Enter the OTP sent to your phone.</p>
+  </motion.div>
+);
+
+const LoginWithPasskeyPage: React.FC<{ onNext: () => void }> = ({ onNext }) => (
+  <motion.form
+    layoutId="form"
+    className="flex items-center justify-between bg-[#171717] rounded-[16px] p-2"
+    onSubmit={(e) => {
+      e.preventDefault();
+      onNext();
+    }}
+  >
+    <div className="flex items-center gap-2 px-2">
+      <Image
+        src="/icons/finger-print.svg"
+        alt="passkey"
+        width={24}
+        height={24}
+      />
+      <p
+        className={cn(
+          "focus-visible:border-none focus-visible:ring-0",
+          "outline-none border-none shadow-none focus:outline-none focus:ring-0 focus:border-none text-[#262626]",
+          "font-xl text-[#6E6E6E]"
+        )}
+        style={{ fontSize: "18px" }}
+      >
+        Login with passkey
+      </p>
+    </div>
+    <motion.div layoutId="form-button">
       <PrimaryButton type="submit" className="rounded-[12px]">
         <ArrowRight className="text-white" />
       </PrimaryButton>
-    </motion.form>
-  );
-};
+    </motion.div>
+  </motion.form>
+);
 
-const Socials = () => {
-  return (
-    <div className="flex gap-1">
-      {SOCIALS.map((social) => (
-        <motion.div
-          layout
-          className="border-primary/10 overflow-hidden rounded-xl border bg-[#171717] p-3 flex-1 flex items-center justify-center"
-        >
-          <div className="flex items-center gap-2">
-            <Image
-              src={`/icons/${social.icon}.svg`}
-              alt={social.name}
-              width={24}
-              height={24}
-            />
-          </div>
-        </motion.div>
-      ))}
-    </div>
-  );
-};
+const PasskeyConfirmPage: React.FC = () => (
+  <motion.div className="flex flex-col items-center justify-center gap-4 py-4">
+    <p className="text-center text-lg">Passkey setup successful. You're in!</p>
+  </motion.div>
+);
 
-const DefaultHeader = ({ setOpen }: { setOpen: (open: boolean) => void }) => {
-  return (
-    <div className="w-full flex items-center justify-between p-2">
-      <h2 className="text-lg font-semibold pl-3">Sign in</h2>
-      <SecondaryButton
-        onClick={() => setOpen(false)}
-        className="w-[32px] h-[32px] rounded-full p-0 bg-[#171717]"
-      >
-        <XIcon className="size-5" />
-      </SecondaryButton>
-    </div>
-  );
-};
-
-const PageHeader = ({
-  onBack,
-  title,
-  setOpen,
-}: {
-  title: string;
-  setOpen: (open: boolean) => void;
-  onBack?: () => void;
-}) => {
-  return (
-    <div className="w-full flex items-center justify-between p-2">
-      {/* go back */}
-      <SecondaryButton onClick={onBack} className="bg-[#171717]">
-        <ArrowLeft />
-      </SecondaryButton>
-      <h2 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-lg font-semibold"></h2>
-      {/* close */}
-      <SecondaryButton
-        onClick={() => setOpen(false)}
-        className="w-[32px] h-[32px] rounded-full p-0 bg-[#171717]"
-      >
-        <XIcon />
-      </SecondaryButton>
-    </div>
-  );
-};
-
-const PasskeyComponent = () => {
-  return (
-    <div className="relative flex items-center justify-center overflow-hidden rounded-[22px] p-0.5">
+// Socials
+const Socials: React.FC = () => (
+  <div className="flex gap-1">
+    {SOCIALS.map((social) => (
       <motion.div
-        className="absolute left-[-50%] top-[-50%] h-[200%] w-[200%] bg-[conic-gradient(from_0deg,transparent_0%,#4DAFFE_10%,#4DAFFE_25%,transparent_35%)]"
-        animate={{ rotate: 360 }}
-        transition={{
-          duration: 1.25,
-          repeat: Infinity,
-          ease: "linear",
-          repeatType: "loop",
-        }}
-      />
-      <div className="bg-preview-bg z-1 flex items-center justify-center rounded-[20px] p-1">
-        <div className="flex items-center justify-center rounded-2xl bg-gray-300 p-1">
-          <div className="flex size-16 items-center justify-center rounded-xl bg-gray-100">
-            <Image
-              src="/icons/finger-print.svg"
-              alt="passkey"
-              width={24}
-              height={24}
-            />
-          </div>
+        key={social.id}
+        layout
+        className="border-primary/10 overflow-hidden rounded-xl border bg-[#171717] p-3 flex-1 flex items-center justify-center"
+      >
+        <div className="flex items-center gap-2">
+          <Image
+            src={`/icons/${social.icon}.svg`}
+            alt={social.name}
+            width={24}
+            height={24}
+          />
         </div>
-      </div>
-    </div>
-  );
-};
+      </motion.div>
+    ))}
+  </div>
+);
 
-// -- Main Modal Component --
+// Wallet select detail (no header in here)
+const WalletSelectPage: React.FC<{ onNext: () => void }> = ({ onNext }) => (
+  <div className="flex flex-col gap-4 px-6 py-4">
+    <PrimaryButton onClick={onNext}>MetaMask</PrimaryButton>
+    <PrimaryButton onClick={onNext}>WalletConnect</PrimaryButton>
+    <PrimaryButton onClick={onNext}>Stellar Wallet</PrimaryButton>
+  </div>
+);
+
+// Wallet confirm detail (no header here)
+const WalletConfirmPage: React.FC = () => (
+  <div className="py-6 text-center">Wallet successfully linked.</div>
+);
+
+// Render correct step
+function renderStep({ id, onNext }: { id: StepId; onNext: () => void }) {
+  switch (id) {
+    case "email":
+      return <LoginWithEmailPage onNext={onNext} />;
+    case "email-confirm":
+      return <EmailConfirmPage />;
+    case "phone":
+      return <LoginWithPhonePage onNext={onNext} />;
+    case "phone-confirm":
+      return <PhoneConfirmPage />;
+    case "passkey":
+      return <LoginWithPasskeyPage onNext={onNext} />;
+    case "passkey-confirm":
+      return <PasskeyConfirmPage />;
+    case "wallet-select":
+      return <WalletSelectPage onNext={onNext} />;
+    case "wallet-confirm":
+      return <WalletConfirmPage />;
+    default:
+      return null;
+  }
+}
+
+// Main modal
 export const FamilySignInModal: React.FC<{
   open: boolean;
   setOpen: (open: boolean) => void;
 }> = ({ open, setOpen }) => {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [clickDirection, setClickDirection] = useState(1);
-  const ref = useRef<HTMLDivElement>(null!);
+  const [currentStepId, setCurrentStepId] = useState<StepId>("email");
+  const ref = useRef<HTMLDivElement>(null);
   const { height } = useMeasure({ ref });
 
-  const handleTabSwitch = (nextStep: number) => {
-    setClickDirection(nextStep > currentStep ? 1 : -1);
-    setCurrentStep(nextStep);
+  const stepIdx = STEPS.findIndex((s) => s.id === currentStepId);
+  const currentStep = STEPS[stepIdx];
+
+  const handleNext = () => {
+    const nextStep = STEPS[stepIdx + 1];
+    if (nextStep) setCurrentStepId(nextStep.id);
+  };
+  const handleBack = () => {
+    const prevStep = STEPS[stepIdx - 1];
+    if (prevStep) setCurrentStepId(prevStep.id);
+  };
+  const handleTabSwitch = (mainId: StepId) => {
+    setCurrentStepId(mainId);
   };
 
   const variants = {
-    initial: (custom: number) => ({
-      // x: `${100 * custom}%`,
-      filter: "blur(2.5px)",
-      opacity: 0,
-      scale: 0.9,
-    }),
-    animate: {
-      // x: 0,
-      filter: "blur(0)",
-      opacity: 1,
-      scale: 1,
-    },
-    exit: (custom: number) => ({
-      // x: `${-100 * custom}%`,
-      filter: "blur(2.5px)",
-      opacity: 0,
-      scale: 0.9,
-    }),
-  };
-
-  const steps = () => {
-    switch (currentStep) {
-      case 0:
-        return <StepOne />;
-      case 1:
-        return <StepTwo />;
-      case 2:
-        return <StepThree />;
-    }
+    initial: { filter: "blur(2.5px)", opacity: 0 },
+    animate: { filter: "blur(0)", opacity: 1 },
+    exit: { filter: "blur(2.5px)", opacity: 0 },
   };
 
   return (
     <MotionConfig transition={{ type: "spring", bounce: 0, duration: 0.2 }}>
-      {/* overlay */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: open ? 1 : 0 }}
@@ -327,8 +378,6 @@ export const FamilySignInModal: React.FC<{
         className="fixed inset-0 bg-black/50 z-50"
         onClick={() => setOpen(false)}
       />
-
-      {/* modal */}
       <motion.div
         animate={{ height }}
         className={cn(
@@ -339,44 +388,62 @@ export const FamilySignInModal: React.FC<{
         <div ref={ref} className="h-fit w-full">
           <div className="p-1">
             <motion.div layout className="space-y-3">
-              <AnimatePresence
-                mode="popLayout"
-                initial={false}
-                custom={clickDirection}
-              >
+              {/* Only ONE header: tab or detail */}
+              {currentStep.main ? (
                 <DefaultHeader setOpen={setOpen} />
-                <Socials />
-                <div className="px-2">
-                  <Tabs
-                    setCurrentStep={setCurrentStep}
-                    currentStep={currentStep}
-                  />
-                </div>
+              ) : (
+                <PageHeader
+                  title={currentStep.label}
+                  setOpen={setOpen}
+                  onBack={handleBack}
+                />
+              )}
+              {/* Socials & tabs ONLY for main steps */}
+              {currentStep.main && (
+                <>
+                  <Socials />
+                  <div className="px-2">
+                    <Tabs
+                      setCurrentStep={handleTabSwitch}
+                      currentStepId={currentStepId}
+                    />
+                  </div>
+                </>
+              )}
+              <AnimatePresence mode="popLayout" initial={false}>
                 <motion.div
-                  key={currentStep}
+                  layout
+                  key={currentStepId}
                   variants={variants}
                   initial="initial"
                   animate="animate"
                   exit="exit"
-                  custom={clickDirection}
                   className="flex flex-col gap-6 p-2"
                 >
-                  {steps()}
+                  {renderStep({
+                    id: currentStepId,
+                    onNext: handleNext,
+                  })}
                 </motion.div>
               </AnimatePresence>
-              {/* divider */}
-              <div className="flex items-center gap-2">
-                <div className="flex-1 h-px bg-[#222222]" />
-                <p className="text-neutral-400">OR</p>
-                <div className="flex-1 h-px bg-[#222222]" />
-              </div>
-
-              {/* connect button */}
-              <div className="w-full p-2">
-                <PrimaryButton className="w-full py-3">
-                  Connect button
-                </PrimaryButton>
-              </div>
+              {/* Divider + Connect button only for main steps */}
+              {currentStep.main && (
+                <>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 h-px bg-[#222222]" />
+                    <p className="text-neutral-400">OR</p>
+                    <div className="flex-1 h-px bg-[#222222]" />
+                  </div>
+                  <div className="p-3">
+                    <PrimaryButton
+                      className="w-full py-3"
+                      onClick={() => setCurrentStepId("wallet-select")}
+                    >
+                      Connect wallet
+                    </PrimaryButton>
+                  </div>
+                </>
+              )}
             </motion.div>
           </div>
         </div>
@@ -385,9 +452,8 @@ export const FamilySignInModal: React.FC<{
   );
 };
 
-export const FamilyModalUsage = () => {
+export const FamilyModalUsage: React.FC = () => {
   const [open, setOpen] = useState(false);
-
   return (
     <>
       {open && <FamilySignInModal open={open} setOpen={setOpen} />}
