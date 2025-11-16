@@ -253,7 +253,7 @@ export default function FirecrawlInput() {
               <Button
                 key={action.name}
                 className={cn(
-                  `bg-transparent hover:bg-transparent relative p-2 h-[32px] flex items-center justify-start space-x-[6px] capitalize text-gray-500 ${
+                  `bg-transparent hover:bg-transparent relative p-2 px-3 h-[32px] flex items-center justify-start space-x-[6px] capitalize text-gray-500 ${
                     action.isNew ? "pr-1.5" : "pr-3"
                   } z-10 ${
                     activeIndex === idx ? "text-black" : ""
@@ -270,7 +270,9 @@ export default function FirecrawlInput() {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div className="flex items-center space-x-2">
-                      <action.icon />
+                      <div className="scale-150">
+                        <action.icon />
+                      </div>
                       <p>{action.name}</p>
 
                       {action.isNew && (

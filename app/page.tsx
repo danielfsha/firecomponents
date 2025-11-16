@@ -10,12 +10,17 @@ import { VercelHomepageNav } from "@/components/vercel-homapage-nav";
 import { VercelDashboardNav } from "@/components/vercel-dashboard-nav";
 import AppleCarousel from "@/components/apple-carousel";
 import { DraggableSidebar } from "@/components/draggable-sidebar";
+import Web3Cards from "@/components/web3-cards";
 
 export default function Home() {
   const [open, setOpen] = useState(false);
   return (
     <div className="relative h-screen w-screen overflow-hidden overflow-y-scroll">
       <VercelDashboardNav />
+
+      <div className="flex flex-col items-center justify-center h-screen w-screen">
+        <Web3Cards />
+      </div>
 
       <DraggableSidebar>
         <h1>hey</h1>

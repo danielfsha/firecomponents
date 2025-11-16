@@ -546,7 +546,7 @@ const LoginWithPasskeyPage: React.FC<{ onNext: () => void }> = ({ onNext }) => (
           "outline-none border-none shadow-none focus:outline-none focus:ring-0 focus:border-none text-[#262626]",
           "font-xl text-[#6E6E6E]"
         )}
-        style={{ fontSize: "18px" }}
+        style={{ fontSize: "16px" }}
       >
         Login with passkey
       </p>
