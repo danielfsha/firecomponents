@@ -5,7 +5,13 @@ import { motion, MotionConfig, AnimatePresence } from "motion/react";
 import { useCallback, useRef, useState } from "react";
 import useMeasure from "@/hooks/use-measure";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, ArrowRight, WalletIcon, XIcon } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  PlusIcon,
+  WalletIcon,
+  XIcon,
+} from "lucide-react";
 import { Input } from "./ui/input";
 
 // TYPES
@@ -69,7 +75,7 @@ export const PrimaryButton: React.FC<
   <button
     type="button"
     className={cn(
-      "rounded-full h-[40px] px-4 font-medium text-white bg-blue-500 hover:bg-blue-600/80 flex items-center justify-center transition-colors disabled:pointer-events-none disabled:opacity-50",
+      "rounded-full min-h-[40px] px-4 font-medium text-white bg-blue-500 hover:bg-blue-600/80 flex items-center justify-center transition-colors disabled:pointer-events-none disabled:opacity-50",
       className
     )}
     {...props}
@@ -99,23 +105,23 @@ export const Tabs: React.FC<{
   setCurrentStep: (stepId: StepId) => void;
   currentStepId: StepId;
 }> = ({ setCurrentStep, currentStepId }) => (
-  <div className="relative flex items-center justify-center gap-1 w-full bg-[#171717] p-1 rounded-xl">
+  <div className="relative flex items-center justify-center w-full bg-[#171717] p-1 rounded-xl">
     {MAIN_STEPS.map((tab) => (
-      <SecondaryButton
+      <div
         key={tab.id}
-        isActive={currentStepId === tab.id}
-        className="flex-1 relative z-10 hover:bg-transparent h-[40px]"
         onClick={() => setCurrentStep(tab.id)}
+        className="flex-1 relative z-10 h-[40px] bg-transparent flex items-center justify-center"
       >
         {tab.label}
-      </SecondaryButton>
+      </div>
     ))}
+
     <motion.div
       layoutId="tab-indicator"
       animate={{
         x: `${100 * MAIN_STEPS.findIndex((t) => t.id === currentStepId)}%`,
       }}
-      className="absolute left-0 h-[40px] w-[33%] rounded-lg bg-white/5 pointer-events-none"
+      className="absolute left-0 h-[40px] w-[34%] rounded-lg bg-white/5 pointer-events-none"
     />
   </div>
 );
@@ -334,6 +340,11 @@ const WalletSelectPage: React.FC<{ onNext: () => void }> = ({ onNext }) => (
         <p>{wallet.name}</p>
       </div>
     ))}
+
+    <PrimaryButton className="mt-4 w-full py-3 flex items-center gap-2 bg-[#FF2056]">
+      <PlusIcon className="size-4.5" />
+      Create a new wallet
+    </PrimaryButton>
   </div>
 );
 
