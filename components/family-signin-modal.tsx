@@ -5,7 +5,7 @@ import { motion, MotionConfig, AnimatePresence } from "motion/react";
 import { useCallback, useRef, useState } from "react";
 import useMeasure from "@/hooks/use-measure";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, ArrowRight, XIcon } from "lucide-react";
+import { ArrowLeft, ArrowRight, WalletIcon, XIcon } from "lucide-react";
 import { Input } from "./ui/input";
 
 // TYPES
@@ -18,6 +18,12 @@ type StepId =
   | "passkey-confirm"
   | "wallet-select"
   | "wallet-confirm";
+
+type Wallet = {
+  id: string;
+  name: string;
+  icon: string;
+};
 
 interface Step {
   id: StepId;
@@ -44,6 +50,14 @@ const STEPS: Step[] = [
   { id: "passkey-confirm", label: "Confirm Passkey", main: false },
   { id: "wallet-select", label: "Select Wallet", main: false },
   { id: "wallet-confirm", label: "Wallet Connected", main: false },
+];
+
+const WALLETS: Wallet[] = [
+  { id: "metamask", name: "MetaMask", icon: "metamask" },
+  { id: "coinbase-wallet", name: "Coinbase Wallet", icon: "coinbase-wallet" },
+  { id: "phantom", name: "Phantom", icon: "phantom" },
+  { id: "rainbow-wallet", name: "Rainbow Wallet", icon: "rainbow-wallet" },
+  { id: "other-wallets", name: "Other Wallets", icon: "other-wallets" },
 ];
 
 const MAIN_STEPS = STEPS.filter((s) => s.main);
@@ -102,7 +116,6 @@ export const Tabs: React.FC<{
         x: `${100 * MAIN_STEPS.findIndex((t) => t.id === currentStepId)}%`,
       }}
       className="absolute left-0 h-[40px] w-[33%] rounded-lg bg-white/5 pointer-events-none"
-      transition={{ type: "spring", bounce: 0, duration: 0.3 }}
     />
   </div>
 );
@@ -128,7 +141,7 @@ const PageHeader: React.FC<{
   title: string;
   setOpen: (open: boolean) => void;
 }> = ({ onBack, title, setOpen }) => (
-  <div className="w-full flex items-center justify-between p-2">
+  <div className="relative w-full flex items-center justify-between p-2">
     <SecondaryButton onClick={onBack} className="bg-[#171717]">
       <ArrowLeft />
     </SecondaryButton>
@@ -303,10 +316,24 @@ const Socials: React.FC = () => (
 
 // Wallet select detail (no header in here)
 const WalletSelectPage: React.FC<{ onNext: () => void }> = ({ onNext }) => (
-  <div className="flex flex-col gap-4 px-6 py-4">
-    <PrimaryButton onClick={onNext}>MetaMask</PrimaryButton>
-    <PrimaryButton onClick={onNext}>WalletConnect</PrimaryButton>
-    <PrimaryButton onClick={onNext}>Stellar Wallet</PrimaryButton>
+  <div className="flex flex-col gap-1">
+    {WALLETS.map((wallet) => (
+      <div
+        key={wallet.id}
+        onClick={onNext}
+        className="rounded-[16px] bg-[#171717] p-4 flex items-center justify-start gap-2"
+      >
+        <div className="flex items-center gap-2">
+          <Image
+            src={`/icons/wallet/${wallet.icon}.svg`}
+            alt={wallet.name}
+            width={32}
+            height={32}
+          />
+        </div>
+        <p>{wallet.name}</p>
+      </div>
+    ))}
   </div>
 );
 
@@ -436,9 +463,10 @@ export const FamilySignInModal: React.FC<{
                   </div>
                   <div className="p-3">
                     <PrimaryButton
-                      className="w-full py-3"
+                      className="w-full py-3 flex items-center gap-2"
                       onClick={() => setCurrentStepId("wallet-select")}
                     >
+                      <WalletIcon className="size-4.5" />
                       Connect wallet
                     </PrimaryButton>
                   </div>
