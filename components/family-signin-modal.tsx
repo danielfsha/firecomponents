@@ -20,6 +20,8 @@ import {
 } from "lucide-react";
 import { Input } from "./ui/input";
 import { button } from "motion/react-client";
+import { OTPInput, SlotProps } from "input-otp";
+import { toast } from "sonner";
 
 // TYPES
 type StepId =
@@ -161,6 +163,235 @@ export const Tabs: React.FC<{
   );
 };
 
+interface AnimatedNumberProps {
+  value: string | null;
+  placeholder: string;
+}
+
+function Separator() {
+  return <div className="h-0.5 w-2 rounded-full bg-[#d4d4d4]" />;
+}
+
+function AnimatedNumber({ value, placeholder }: AnimatedNumberProps) {
+  return (
+    <div className="relative flex h-[40px] w-[32px] items-center justify-center overflow-hidden">
+      <AnimatePresence initial={false} mode="wait">
+        <motion.span
+          key={value}
+          initial={{ opacity: 0.25, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 0 }}
+          transition={{ duration: 0.08, ease: "easeInOut" }}
+          className={cn("absolute", value === null ? "text-primary/10" : "")}
+        >
+          {value ?? placeholder}
+        </motion.span>
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function Slot(
+  props: SlotProps & {
+    isShaking?: boolean;
+    isVerifying: boolean;
+    delay: number;
+  }
+) {
+  const placeholderChar = "0";
+
+  return (
+    <motion.div
+      layout
+      className={cn(
+        "relative flex h-[45px] min-w-[36px] flex-1 items-center justify-center rounded-[10px] bg-[#171717] text-base font-semibold text-[#fff]",
+        props.isVerifying && "fast-pulse text-[#232323]/60 duration-100"
+      )}
+      style={{
+        animationDelay: `${props.delay}ms`,
+      }}
+    >
+      <AnimatedNumber value={props.char} placeholder={placeholderChar} />
+      {props.isActive ? (
+        <motion.div
+          layoutId="indicator"
+          className={cn(
+            "absolute inset-0 z-10 rounded-[10px] border-3",
+            props.isShaking ? "border-rose-400" : "border-blue-400",
+            props.isVerifying && "border-none"
+          )}
+          transition={{ duration: 0.12, ease: "easeInOut" }}
+        />
+      ) : null}
+    </motion.div>
+  );
+}
+
+export function FamilyStyleOTP() {
+  const CORRECT_OTP = "123456";
+  const [value, setValue] = useState("");
+  const [disableSubmitButton, setDisableSubmitButton] = useState(true);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [isShaking, setIsShaking] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const otpRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setDisableSubmitButton(value.length !== 6);
+  }, [value]);
+
+  const handleSubmit = () => {
+    if (isVerifying) return;
+
+    setIsVerifying(true);
+    setDisableSubmitButton(true);
+    setErrorMessage("");
+
+    setTimeout(() => {
+      if (value === CORRECT_OTP) {
+        toast.message("Successfully verified", {
+          description: "Your OTP has been verified.",
+        });
+      } else {
+        setIsShaking(true);
+        setErrorMessage("Invalid validation code");
+      }
+
+      setValue("");
+      setIsVerifying(false);
+
+      if (otpRef.current) {
+        otpRef.current.focus();
+        otpRef.current.setSelectionRange(0, 0);
+      }
+    }, 2000);
+  };
+
+  return (
+    <div className="w-full flex flex-col">
+      <div className="mb-6">
+        <p className="text-tertiary text-sm text-center">
+          Enter the code sent to your email.
+        </p>
+      </div>
+      <motion.div
+        animate={isShaking ? { x: [0, -5, 5, -2.5, 2.5, 0] } : { x: 0 }}
+        transition={{ duration: 0.3 }}
+        onAnimationComplete={() => setIsShaking(false)}
+      >
+        <OTPInput
+          ref={otpRef}
+          value={value}
+          maxLength={6}
+          containerClassName="group flex gap-2 items-center mb-6"
+          onChange={(newValue) => {
+            if (!/^\d*$/.test(newValue)) {
+              setIsShaking(true);
+              return;
+            }
+            setValue(newValue);
+            if (errorMessage) setErrorMessage("");
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              if (value.length < 6) return;
+              handleSubmit();
+            }
+          }}
+          render={({ slots }) => (
+            <div className="flex gap-2 items-center justify-between w-full">
+              <div className="flex gap-2 flex-1">
+                {slots.slice(0, 3).map((slot, idx) => (
+                  <Slot
+                    key={idx}
+                    {...slot}
+                    isShaking={isShaking}
+                    isVerifying={isVerifying}
+                    delay={idx * 100}
+                  />
+                ))}
+              </div>
+              <Separator />
+              <div className="flex gap-2 flex-1">
+                {slots.slice(3).map((slot, idx) => (
+                  <Slot
+                    key={idx}
+                    {...slot}
+                    isShaking={isShaking}
+                    isVerifying={isVerifying}
+                    delay={(idx + 3) * 100}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        />
+      </motion.div>
+      <span className="text-tertiary mb-3 text-[13px] text-center">
+        Didn't receive a code?{" "}
+        <button
+          className="cursor-pointer font-semibold text-blue-500"
+          onClick={() => {
+            toast.message("Verification code has been sent", {
+              description:
+                "Normally you would get a code but this is just a prototype ;)",
+            });
+          }}
+        >
+          Resend
+        </button>
+      </span>
+      <button
+        disabled={disableSubmitButton}
+        onClick={handleSubmit}
+        className={cn(
+          "flex h-[40px] w-full cursor-pointer items-center justify-center rounded-full font-semibold select-none disabled:cursor-not-allowed disabled:opacity-40",
+          "bg-blue-500 hover:bg-blue-600 transition-colors duration-200 ease-out active:scale-95",
+          isVerifying ? "text-[#b3b3b3] bg-[#2A2A2A]" : "text-white"
+        )}
+      >
+        <AnimatePresence initial={false}>
+          {isVerifying ? (
+            <motion.div
+              className="flex w-fit items-center gap-1"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="animate-spin"
+              >
+                <path
+                  d="M14 8C14 8.78793 13.8448 9.56815 13.5433 10.2961C13.2417 11.0241 12.7998 11.6855 12.2426 12.2426C11.6855 12.7998 11.024 13.2418 10.2961 13.5433C9.56814 13.8448 8.78793 14 8 14C7.21206 14 6.43185 13.8448 5.70389 13.5433C4.97594 13.2418 4.31451 12.7998 3.75736 12.2426C3.2002 11.6855 2.75825 11.0241 2.45672 10.2961C2.15519 9.56815 2 8.78793 2 8C2 7.21207 2.15519 6.43186 2.45672 5.7039C2.75825 4.97595 3.2002 4.31451 3.75736 3.75736C4.31451 3.20021 4.97594 2.75825 5.7039 2.45673C6.43185 2.1552 7.21207 2 8 2C8.78793 2 9.56814 2.1552 10.2961 2.45673C11.0241 2.75826 11.6855 3.20021 12.2426 3.75736C12.7998 4.31452 13.2417 4.97595 13.5433 5.7039C13.8448 6.43186 14 7.21207 14 8L14 8Z"
+                  stroke="#DADADA"
+                  strokeWidth="3"
+                />
+                <path
+                  d="M14 8C14 8.94687 13.7759 9.88029 13.346 10.7239C12.9162 11.5676 12.2927 12.2976 11.5267 12.8541C10.7607 13.4107 9.87381 13.778 8.9386 13.9261C8.0034 14.0743 7.04641 13.9989 6.14589 13.7063"
+                  stroke="#191919"
+                  strokeOpacity="0.36"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                />
+              </svg>
+              Verifying
+            </motion.div>
+          ) : (
+            <span>Submit</span>
+          )}
+        </AnimatePresence>
+      </button>
+    </div>
+  );
+}
+
 // Main header (tab pages only)
 const DefaultHeader: React.FC<{ setOpen: (open: boolean) => void }> = ({
   setOpen,
@@ -183,7 +414,10 @@ const PageHeader: React.FC<{
   setOpen: (open: boolean) => void;
 }> = ({ onBack, title, setOpen }) => (
   <div className="relative w-full flex items-center justify-between p-2">
-    <SecondaryButton onClick={onBack} className="bg-[#171717]">
+    <SecondaryButton
+      onClick={onBack}
+      className="bg-[#171717] size-[32px] rounded-full p-0"
+    >
       <ArrowLeft />
     </SecondaryButton>
     <h2 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-lg font-semibold">
@@ -240,10 +474,8 @@ const LoginWithEmailPage: React.FC<{ onNext: () => void }> = ({ onNext }) => {
 };
 
 const EmailConfirmPage: React.FC = () => (
-  <motion.div className="flex flex-col items-center justify-center gap-4 py-4">
-    <p className="text-center text-lg">
-      Check your inbox for a confirmation link.
-    </p>
+  <motion.div className="flex flex-col items-center justify-center gap-4 py-4 pb-0">
+    <FamilyStyleOTP />
   </motion.div>
 );
 
@@ -287,8 +519,8 @@ const LoginWithPhonePage: React.FC<{ onNext: () => void }> = ({ onNext }) => {
 };
 
 const PhoneConfirmPage: React.FC = () => (
-  <motion.div className="flex flex-col items-center justify-center gap-4 py-4">
-    <p className="text-center text-lg">Enter the OTP sent to your phone.</p>
+  <motion.div className="flex flex-col items-center justify-center gap-4 py-4 pb-0">
+    <FamilyStyleOTP />
   </motion.div>
 );
 
@@ -340,7 +572,7 @@ const PasskeyConfirmPage: React.FC = () => (
           repeatType: "loop",
         }}
       />
-      <div className="bg-preview-bg z-1 flex items-center justify-center rounded-[20px] p-1">
+      <div className="bg-preview-bg z-1 flex items-center justify-center rounded-[20px] p-0.5">
         <div className="flex items-center justify-center rounded-2xl bg-[#232323] p-1">
           <div className="flex size-16 items-center justify-center rounded-xl bg-[#000]">
             <Image
