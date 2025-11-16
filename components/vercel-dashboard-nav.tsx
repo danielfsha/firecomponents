@@ -39,9 +39,11 @@ const navigationItems = [
   "Settings",
 ];
 
-export function VercelDashboardNav() {
-  const { scrollProgress } = useScrollProgress();
-
+export function VercelDashboardNav({
+  scrollProgress,
+}: {
+  scrollProgress: number;
+}) {
   const [activeIndex, setActiveIndex] = useState<number | null>(0);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const navItemsRef = useRef<(HTMLButtonElement | null)[]>([]);

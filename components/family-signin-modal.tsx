@@ -586,7 +586,7 @@ const PasskeyConfirmPage: React.FC = () => (
       </div>
     </div>
 
-    <div className="flex flex-col items-center justify-center space-y-2">
+    <div className="flex flex-col items-center justify-center space-y-2 pb-1.5">
       <h1 className="text-xl font-bold">Waiting for passkey</h1>
       <p className="text-gray-500 w-[75%] text-center text-md leading-6">
         Please follow prompts to verify your passkey

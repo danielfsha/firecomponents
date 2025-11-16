@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowDown, ArrowUp, PlusCircle, X } from "lucide-react";
+import { ChevronDown, ChevronUp, PlusCircle, X } from "lucide-react";
 import { Button } from "./ui/button";
 import { useCallback, useMemo, useRef, useState } from "react";
 import useMeasure from "@/hooks/use-measure";
@@ -161,41 +161,52 @@ export default function AppleCarousel() {
   }, []);
 
   return (
-    <div className="relative bg-black text-white w-4xl h-[700px] rounded-2xl flex items-center justify-between flex-col lg:flex-row space-x-4">
+    <div className="relative bg-black text-white w-6xl h-[700px] rounded-[48px] flex items-center justify-between flex-col lg:flex-row space-x-4 p-4 overflow-hidden">
       {/* x button */}
-      <Button
-        onClick={() => setCurrentSlide(null)}
-        className="absolute size-12 rounded-full top-2 right-2"
-        aria-label="Close"
-      >
-        <X />
-      </Button>
+      {currentSlide !== null && (
+        <Button
+          onClick={() => setCurrentSlide(null)}
+          className="absolute size-12 rounded-full top-6 right-4"
+          aria-label="Close"
+        >
+          <X />
+        </Button>
+      )}
 
-      <div className="flex flex-col items-center justify-center space-y-2 h-full px-2">
-        <Button
-          disabled={currentSlide === 0}
-          className={`size-12 rounded-full ${
-            currentSlide === 0
-              ? "opacity-50 cursor-not-allowed"
-              : "cursor-pointer"
-          }`}
-          onClick={() => handleChange(-1)}
-          aria-label="Previous Slide"
-        >
-          <ArrowUp />
-        </Button>
-        <Button
-          disabled={currentSlide === SLIDES.length - 1}
-          className={`size-12 rounded-full ${
-            currentSlide === SLIDES.length - 1
-              ? "opacity-50 cursor-not-allowed"
-              : "cursor-pointer"
-          }`}
-          onClick={() => handleChange(1)}
-          aria-label="Next Slide"
-        >
-          <ArrowDown />
-        </Button>
+      <div className="flex items-center justify-center w-12">
+        {currentSlide !== null && (
+          <motion.div
+            initial={{ opacity: 0, filter: "blur(4px)" }}
+            animate={{ opacity: 1, filter: "blur(0)" }}
+            exit={{ opacity: 0, filter: "blur(4px)" }}
+            className="flex flex-col items-center justify-center space-y-4 h-full px-2"
+          >
+            <Button
+              disabled={currentSlide === 0}
+              className={`size-10 rounded-full ${
+                currentSlide === 0
+                  ? "opacity-50 cursor-not-allowed"
+                  : "cursor-pointer"
+              }`}
+              onClick={() => handleChange(-1)}
+              aria-label="Previous Slide"
+            >
+              <ChevronUp />
+            </Button>
+            <Button
+              disabled={currentSlide === SLIDES.length - 1}
+              className={`size-10 rounded-full ${
+                currentSlide === SLIDES.length - 1
+                  ? "opacity-50 cursor-not-allowed"
+                  : "cursor-pointer"
+              }`}
+              onClick={() => handleChange(1)}
+              aria-label="Next Slide"
+            >
+              <ChevronDown />
+            </Button>
+          </motion.div>
+        )}
       </div>
 
       <div className="flex flex-col items-start justify-center space-y-1 w-[300px] h-full p-2 flex-1 overflow-y-auto">

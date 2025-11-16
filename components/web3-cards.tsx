@@ -64,7 +64,7 @@ export const Web3Card = ({
 }) => {
   return (
     <motion.div
-      // layout
+      layout
       layoutId={`${card.title}-card`}
       onClick={() => {
         if (!isSelected) {
@@ -76,22 +76,22 @@ export const Web3Card = ({
       key={card.title}
       className={cn(
         "flex flex-col items-center justify-between p-4 rounded-3xl shadow-sm min-w-32 space-y-2",
-        card.title === "Daniel" &&
-          "bg-gradient-to-b from-purple-500 to-purple-600 text-white shadow",
-        card.title === "Savings" &&
-          "bg-gradient-to-b from-gray-500 to-gray-600 text-white shadow",
-        card.title === "Staked" &&
-          "bg-gradient-to-b from-green-500 to-green-600 text-white shadow",
-        card.title === "Spending" &&
-          "bg-gradient-to-b from-blue-500 to-blue-600 text-white shadow",
+        card.title === "Daniel" && "bg-[#ad46ff] text-white shadow",
+        card.title === "Savings" && "bg-[#171717] text-white shadow",
+        card.title === "Staked" && "bg-[#00b8db] text-white shadow",
+        card.title === "Spending" && "bg-[#2b7fff] text-white shadow",
         isSelected && "w-full h-48"
       )}
     >
       <div className="flex items-center justify-between w-full">
-        <motion.div className="flex items-center gap-2 scale-85">
+        <motion.div
+          layoutId={`${card.title}-icon`}
+          className="flex items-center gap-2 scale-85"
+        >
           {card.icon}
         </motion.div>
         <motion.div
+          layoutId={`${card.title}-ellipsis`}
           whileTap={{ scale: 0.8 }}
           className="flex items-center justify-center rounded-full bg-white/20 text-white size-7 p-1"
         >
@@ -100,8 +100,16 @@ export const Web3Card = ({
       </div>
 
       <motion.div className="flex flex-col items-start justify-start w-full mt-2">
-        <motion.h3 className="text-lg font-semibold">{card.title}</motion.h3>
-        <motion.p className="text-lg font-semibold opacity-60 -mt-1">
+        <motion.h3
+          layoutId={`${card.title}-title`}
+          className="text-lg font-semibold"
+        >
+          {card.title}
+        </motion.h3>
+        <motion.p
+          layoutId={`${card.title}-ETHAmount`}
+          className="text-lg font-semibold opacity-60 -mt-1"
+        >
           {card.ETHAmount}
         </motion.p>
       </motion.div>
@@ -120,12 +128,12 @@ export default function Web3Cards() {
   };
 
   return (
-    <MotionConfig transition={{ type: "spring", bounce: 0, duration: 0.3 }}>
+    <MotionConfig transition={{ type: "spring", bounce: 0, duration: 0.4 }}>
       <div>
         {selectedCard === null ? (
           <div
             className={cn(
-              "grid gap-2",
+              "grid gap-3",
               selectedCard
                 ? "grid-cols-3 grid-rows-2"
                 : "grid-cols-2 grid-rows-2"
@@ -141,7 +149,7 @@ export default function Web3Cards() {
             ))}
           </div>
         ) : (
-          <div className={cn("flex flex-col gap-1 ")}>
+          <div className={cn("flex flex-col gap-3")}>
             <div className={cn("flex items-center justify-between w-full ")}>
               {/* render the selected card */}
               {selectedCard && (
@@ -154,7 +162,7 @@ export default function Web3Cards() {
               )}
             </div>
             <div
-              className={cn("flex items-center justify-between w-full gap-1")}
+              className={cn("flex items-center justify-between w-full gap-3")}
             >
               {/* render the unselected cards */}
               {unselectedCards.map((card: Card, index: number) => (

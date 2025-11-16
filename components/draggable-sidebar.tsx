@@ -155,7 +155,7 @@ export function DraggableSidebar({
       >
         {/* Drag handle - visible area */}
         <div
-          className="absolute top-0 right-2 w-6 h-full cursor-grab active:cursor-grabbing"
+          className="absolute top-0 right-0 w-6 h-full cursor-grab active:cursor-grabbing"
           onMouseDown={handleMouseDown}
         />
 
