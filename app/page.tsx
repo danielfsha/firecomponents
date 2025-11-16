@@ -9,13 +9,17 @@ import FirecrawlInput from "@/components/firecrawl-input";
 import { VercelHomepageNav } from "@/components/vercel-homapage-nav";
 import { VercelDashboardNav } from "@/components/vercel-dashboard-nav";
 import AppleCarousel from "@/components/apple-carousel";
-import LiquidToggle from "@/components/liquid-toggle";
+import { DraggableSidebar } from "@/components/draggable-sidebar";
 
 export default function Home() {
   const [open, setOpen] = useState(false);
   return (
     <div className="relative h-screen w-screen overflow-hidden overflow-y-scroll">
       <VercelDashboardNav />
+
+      <DraggableSidebar>
+        <h1>hey</h1>
+      </DraggableSidebar>
 
       <div className="flex flex-col items-center justify-center h-screen w-screen">
         <AppleCarousel />

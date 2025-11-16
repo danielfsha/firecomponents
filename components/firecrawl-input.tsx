@@ -159,22 +159,30 @@ export const PrimaryButton: React.FC<
 export default function FirecrawlInput() {
   const [value, setValue] = useState("");
   const [activeIndex, setActiveIndex] = useState<number | null>(0);
+  const clickedLeft = useMotionValue(0);
+  const clickedWidth = useMotionValue(0);
+  const springConfig = { stiffness: 380, damping: 30 };
+  const springClickedLeft = useSpring(clickedLeft, springConfig);
+  const springClickedWidth = useSpring(clickedWidth, springConfig);
   const navItemsRef = useRef<(HTMLButtonElement | null)[]>([]);
 
-  // Motion values for nav indicator
-  const activeLeft = useMotionValue(0);
-  const activeWidth = useMotionValue(0);
-  const springConfig = { stiffness: 380, damping: 30 };
-  const springActiveLeft = useSpring(activeLeft, springConfig);
-  const springActiveWidth = useSpring(activeWidth, springConfig);
-
+  // Update indicator position and size when currentStepId changes
   useEffect(() => {
-    if (activeIndex !== null && navItemsRef.current[activeIndex]) {
-      const el = navItemsRef.current[activeIndex];
-      activeLeft.set(el.offsetLeft);
-      activeWidth.set(el.offsetWidth);
+    const index = ACTIONS.findIndex((_, idx) => idx === activeIndex);
+    if (index !== -1 && navItemsRef.current[index]) {
+      const el = navItemsRef.current[index];
+      clickedLeft.set(el.offsetLeft);
+      clickedWidth.set(el.offsetWidth);
+    } else {
+      // fallback to hide indicator
+      clickedLeft.set(0);
+      clickedWidth.set(0);
     }
-  }, [activeIndex, activeLeft, activeWidth]);
+  }, [activeIndex, clickedLeft, clickedWidth]);
+
+  const handleActionClick = (index: number) => {
+    setActiveIndex(index);
+  };
 
   // Button width animation
   const buttonControls = useAnimation();
@@ -273,7 +281,7 @@ export default function FirecrawlInput() {
                     </div>
                   </TooltipTrigger>
 
-                  <TooltipContent className="w-42">
+                  <TooltipContent className="w-56 text-[16px] bg-[#171717] text-white">
                     {action.tooltipContent}
                   </TooltipContent>
                 </Tooltip>
@@ -282,7 +290,7 @@ export default function FirecrawlInput() {
             {/* Active nav indicator */}
             <motion.div
               className="absolute bottom-px h-[32px] bg-white shadow-[0_0.75px_0.75px_rgba(0,0,0,0.02),0_0.25px_0.25px_rgba(0,0,0,0.02)] rounded-[8px] border border-gray-200"
-              style={{ left: springActiveLeft, width: springActiveWidth }}
+              style={{ left: springClickedLeft, width: springClickedWidth }}
             />
           </div>
           {/* Arrow icon */}
