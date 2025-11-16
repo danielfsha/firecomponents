@@ -328,8 +328,41 @@ const LoginWithPasskeyPage: React.FC<{ onNext: () => void }> = ({ onNext }) => (
 );
 
 const PasskeyConfirmPage: React.FC = () => (
-  <motion.div className="flex flex-col items-center justify-center gap-4 py-4">
-    <p className="text-center text-lg">Passkey setup successful. You're in!</p>
+  <motion.div className="flex flex-col items-center justify-center gap-8">
+    <div className="relative flex items-center justify-center overflow-hidden rounded-[22px] p-0.25">
+      <motion.div
+        className="absolute left-[-50%] top-[-50%] h-[200%] w-[200%] bg-[conic-gradient(from_0deg,transparent_0%,#4DAFFE_10%,#4DAFFE_25%,transparent_35%)]"
+        animate={{ rotate: 360 }}
+        transition={{
+          duration: 1.25,
+          repeat: Infinity,
+          ease: "linear",
+          repeatType: "loop",
+        }}
+      />
+      <div className="bg-preview-bg z-1 flex items-center justify-center rounded-[20px] p-1">
+        <div className="flex items-center justify-center rounded-2xl bg-[#232323] p-1">
+          <div className="flex size-16 items-center justify-center rounded-xl bg-[#000]">
+            <Image
+              src="/icons/finger-print.svg"
+              alt="passkey"
+              width={32}
+              height={32}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div className="flex flex-col items-center justify-center space-y-2">
+      <h1 className="text-xl font-bold">Waiting for passkey</h1>
+      <p className="text-gray-500 w-[75%] text-center text-md leading-6">
+        Please follow prompts to verify your passkey
+      </p>
+      <PrimaryButton className="mt-4 w-full py-3 flex items-center gap-2">
+        Continue
+      </PrimaryButton>
+    </div>
   </motion.div>
 );
 
@@ -362,9 +395,9 @@ const WalletSelectPage: React.FC<{ onNext: () => void }> = ({ onNext }) => (
       <div
         key={wallet.id}
         onClick={onNext}
-        className="rounded-[16px] bg-[#171717] p-4 flex items-center justify-start gap-2"
+        className="rounded-[16px] bg-[#171717] p-4 flex items-center justify-start gap-6"
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
           <Image
             src={`/icons/wallet/${wallet.icon}.svg`}
             alt={wallet.name}
@@ -372,7 +405,7 @@ const WalletSelectPage: React.FC<{ onNext: () => void }> = ({ onNext }) => (
             height={32}
           />
         </div>
-        <p>{wallet.name}</p>
+        <p className="text-lg tracking-wide">{wallet.name}</p>
       </div>
     ))}
 
