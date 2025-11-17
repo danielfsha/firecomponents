@@ -12,7 +12,7 @@ type transaction = {
   asset: string;
   type: "send" | "receive";
   state: "pending" | "completed" | "failed";
-  amount: number | "Fee Only";
+  amount: string;
   receiver?: string;
 };
 
@@ -22,7 +22,7 @@ const transactions: transaction[] = [
     asset: "Ethereum",
     type: "send",
     state: "pending",
-    amount: 20.0,
+    amount: "$20.00",
     receiver: "vitalik",
   },
   {
