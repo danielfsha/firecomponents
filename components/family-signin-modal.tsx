@@ -641,7 +641,7 @@ const WalletSelectPage: React.FC<{ onNext: () => void }> = ({ onNext }) => (
       </div>
     ))}
 
-    <PrimaryButton className="mt-4 w-full py-3 flex items-center gap-2 bg-[#FF2056]">
+    <PrimaryButton className="mt-4 w-full py-3 flex items-center gap-2 bg-[#FF2056] hover:bg-[#FF2056]/80">
       <PlusIcon className="size-4.5" />
       Create a new wallet
     </PrimaryButton>

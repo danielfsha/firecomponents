@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence, MotionConfig } from "motion/react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface Slide {
   id: number;
@@ -50,10 +51,11 @@ const slides: Slide[] = [
   },
 ];
 
-export function IndicatorCarousel() {
+export function Carousel() {
+  const [slideDirection, setSlideDirection] = useState(1);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [progress, setProgress] = useState(0);
-  const SLIDE_DURATION = 5000; // 5 seconds per slide
+  const SLIDE_DURATION = 8000; // 5 seconds per slide
 
   useEffect(() => {
     setProgress(0);
@@ -78,19 +80,53 @@ export function IndicatorCarousel() {
 
   const handleNext = () => {
     setCurrentIndex((prev) => (prev + 1) % slides.length);
+    setSlideDirection(1);
   };
 
   const handlePrev = () => {
     setCurrentIndex((prev) => (prev - 1 + slides.length) % slides.length);
+    setSlideDirection(-1);
   };
 
   const handleIndicatorClick = (index: number) => {
     setCurrentIndex(index);
   };
 
+  const variants = {
+    initial: (custom: number) => ({
+      x: `${100 * custom}%`,
+      filter: "blur(2.5px)",
+      opacity: 0,
+    }),
+    animate: () => ({
+      x: 0,
+      filter: "blur(0)",
+      opacity: 1,
+    }),
+    exit: (custom: number) => ({
+      x: `${-100 * custom}%`,
+      filter: "blur(2.5px)",
+      opacity: 0,
+    }),
+  };
+
+  const step = (slide: Slide) => (
+    <motion.div
+      key={slide.id}
+      variants={variants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      custom={slideDirection}
+      className="flex flex-col gap-6 w-full items-center justify-center bg-neutral-50 rounded-2xl max-w-[977px] h-[550px] "
+    ></motion.div>
+  );
+
+  const currentSlide = slides[currentIndex];
+
   return (
     <div className="w-full max-w-5xl mx-auto">
-      <div className="relative">
+      <div className="relative flex flex-col items-center justify-center">
         {/* Navigation Controls & Indicators */}
         <div className="flex items-center justify-center gap-4 mb-6">
           {/* Left Navigation Button */}
@@ -105,25 +141,29 @@ export function IndicatorCarousel() {
           {/* Indicators */}
           <div className="flex items-center gap-2">
             {slides.map((_, index) => (
-              <button
+              <motion.button
                 key={index}
                 onClick={() => handleIndicatorClick(index)}
                 className="relative"
                 aria-label={`Go to slide ${index + 1}`}
               >
-                {index === currentIndex ? (
-                  <div className="w-16 h-2 bg-muted rounded-full overflow-hidden relative">
+                <motion.div
+                  style={{ height: "8px" }}
+                  animate={{
+                    width: index === currentIndex ? "40px" : "8px",
+                  }}
+                  className="w-16 h-2 bg-muted rounded-full overflow-hidden relative"
+                >
+                  {index === currentIndex && (
                     <motion.div
                       className="absolute inset-0 bg-foreground rounded-full origin-left"
                       initial={{ scaleX: 0 }}
                       animate={{ scaleX: progress / 100 }}
                       transition={{ duration: 0.05, ease: "linear" }}
                     />
-                  </div>
-                ) : (
-                  <div className="w-2 h-2 bg-muted rounded-full hover:bg-muted-foreground/40 transition-colors" />
-                )}
-              </button>
+                  )}
+                </motion.div>
+              </motion.button>
             ))}
           </div>
 
@@ -138,56 +178,37 @@ export function IndicatorCarousel() {
         </div>
 
         {/* Slide Content */}
-        <div className="relative overflow-hidden rounded-2xl bg-card shadow-2xl">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentIndex}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.4, ease: "easeInOut" }}
-              className="relative"
-            >
-              {/* Image Section */}
-              <div className="relative h-96 overflow-hidden bg-gradient-to-br from-accent/20 to-muted">
-                <motion.img
-                  src={slides[currentIndex].image}
-                  alt={slides[currentIndex].title}
-                  className="w-full h-full object-cover"
-                  initial={{ scale: 1.1 }}
-                  animate={{ scale: 1 }}
-                  transition={{ duration: 0.5 }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-card/90 to-transparent" />
-              </div>
 
-              {/* Text Content */}
-              <div className="p-12 space-y-4">
-                <motion.h2
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2, duration: 0.5 }}
-                  className="text-4xl font-bold text-foreground text-balance"
+        <MotionConfig transition={{ type: "spring", bounce: 0, duration: 0.3 }}>
+          <motion.div
+            className={cn(
+              "relative flex w-full flex-col rounded-2xl will-change-transform p-1",
+              "rounded-2xl"
+            )}
+          >
+            <div className="h-fit w-full">
+              <div className="p-1 w-full h-[550px] rounded-2xl">
+                <AnimatePresence
+                  mode="popLayout"
+                  initial={false}
+                  custom={slideDirection}
                 >
-                  {slides[currentIndex].title}
-                </motion.h2>
-                <motion.p
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3, duration: 0.5 }}
-                  className="text-lg text-muted-foreground max-w-2xl text-pretty leading-relaxed"
-                >
-                  {slides[currentIndex].description}
-                </motion.p>
+                  <motion.div
+                    key={currentIndex}
+                    variants={variants}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    custom={slideDirection}
+                    className="flex flex-col gap-6"
+                  >
+                    {step(currentSlide)}
+                  </motion.div>
+                </AnimatePresence>
               </div>
-            </motion.div>
-          </AnimatePresence>
-        </div>
-
-        {/* Slide Counter */}
-        <div className="text-center mt-6 text-sm text-muted-foreground">
-          {currentIndex + 1} / {slides.length}
-        </div>
+            </div>
+          </motion.div>
+        </MotionConfig>
       </div>
     </div>
   );
