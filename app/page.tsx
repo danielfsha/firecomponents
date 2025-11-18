@@ -16,6 +16,8 @@ import { Carousel } from "@/components/carousel";
 import IOS26Switch from "@/components/ios26-switch";
 import Nav from "@/components/section/nav";
 import PendingWalletTransactions from "@/components/pending-wallet-transactions";
+import FileTree from "@/components/filetree";
+import AnimatedDock from "@/components/animated-dock";
 
 export default function Home() {
   const { scrollProgress } = useScrollProgress();
@@ -27,8 +29,17 @@ export default function Home() {
       <Nav />
 
       <div className="flex flex-col items-center justify-center h-screen w-screen">
+        <FileTree />
+      </div>
+
+      <div className="flex flex-col items-center justify-center h-screen w-screen">
+        <AnimatedDock />
+      </div>
+
+      <div className="flex flex-col items-center justify-center h-screen w-screen">
         <Carousel />
       </div>
+
       <div className="flex flex-col items-center justify-center h-screen w-screen">
         <PendingWalletTransactions />
       </div>
@@ -41,16 +52,12 @@ export default function Home() {
       </div>
 
       <div className="flex flex-col items-center justify-center h-screen w-screen">
-        <IOSThemeSwitch />
-      </div>
-
-      <div className="flex flex-col items-center justify-center h-screen w-screen">
         <Web3Cards />
       </div>
 
-      <DraggableSidebar>
+      {/* <DraggableSidebar>
         <h1>hey</h1>
-      </DraggableSidebar>
+      </DraggableSidebar> */}
 
       <div className="flex flex-col items-center justify-center h-screen w-screen">
         <AppleCarousel />

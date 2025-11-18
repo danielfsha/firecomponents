@@ -72,6 +72,9 @@ const PendingWalletTransactions = () => {
     <div className="flex flex-col max-w-[320px] w-full">
       <MotionConfig transition={{ type: "spring", bounce: 0, duration: 0.2 }}>
         <motion.div
+          whileTap={{
+            scale: 0.95,
+          }}
           onClick={() => setOpen(!open)}
           className={cn(
             "relative flex items-center justify-between w-full max-w-[320px] overflow-hidden rounded-2xl p-2 will-change-transform",
@@ -179,7 +182,13 @@ const PendingWalletTransactions = () => {
                 >
                   <span>{transaction.asset}</span>
 
-                  <span className="font-semibold text-[14px] border rounded-sm p-1 text-sm">
+                  <span
+                    className={`font-semibold text-[14px] ${
+                      transaction.amount === "Fee Only"
+                        ? "border rounded-sm"
+                        : "border rounded-sm"
+                    } p-1 text-sm`}
+                  >
                     {transaction.amount}
                   </span>
                 </motion.div>
