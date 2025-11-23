@@ -796,7 +796,9 @@ export const FamilyModalUsage: React.FC = () => {
   return (
     <>
       {open && <FamilySignInModal open={open} setOpen={setOpen} />}
-      <PrimaryButton onClick={() => setOpen(true)}>Sign in</PrimaryButton>
+      <motion.div layoutId="family-modal-trigger">
+        <PrimaryButton onClick={() => setOpen(true)}>Sign in</PrimaryButton>
+      </motion.div>
     </>
   );
 };

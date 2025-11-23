@@ -51,7 +51,7 @@ const slides: Slide[] = [
   },
 ];
 
-export function Carousel() {
+export default function Carousel() {
   const [slideDirection, setSlideDirection] = useState(1);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [progress, setProgress] = useState(0);

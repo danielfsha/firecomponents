@@ -213,7 +213,10 @@ export default function FirecrawlInput() {
 
   return (
     <MotionConfig transition={{ type: "spring", bounce: 0, duration: 0.2 }}>
-      <motion.div className="flex flex-col items-center justify-center w-[552px] border border-gray-200 rounded-2xl shadow-[0px_0px_0px_6px_rgba(237,237,237,0.4)] backdrop-blur-sm">
+      <motion.div
+        layoutId="firecrawl-input"
+        className="flex flex-col items-center justify-center w-[552px] bg-white border border-gray-200 rounded-2xl shadow-[0px_0px_0px_6px_rgba(237,237,237,0.4)] backdrop-blur-sm"
+      >
         {/* first row */}
         <div className="w-full flex items-center justify-start p-4 border-b h-[56px]">
           <svg

@@ -128,7 +128,7 @@ export default function Web3Cards() {
   };
 
   return (
-    <MotionConfig transition={{ type: "spring", bounce: 0, duration: 0.4 }}>
+    <MotionConfig transition={{ type: "spring", bounce: 0, duration: 0.3 }}>
       <div>
         {selectedCard === null ? (
           <div

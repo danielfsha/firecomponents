@@ -534,7 +534,7 @@ const SolutionsPage = () => {
   );
 };
 
-export function VercelHomepageNav() {
+export default function VercelHomepageNav() {
   const [hoverDirection, setHoverDirection] = useState<number>(0);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const contentRef = useRef(null!);
@@ -620,6 +620,7 @@ export function VercelHomepageNav() {
               <AnimatePresence>
                 {isHovered && (
                   <motion.div
+                    layoutId="container"
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}

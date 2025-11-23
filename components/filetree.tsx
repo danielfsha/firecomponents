@@ -15,7 +15,7 @@ function FilesystemItem({ node }: { node: Node }) {
   const isFolder = Array.isArray(node.nodes);
 
   return (
-    <li>
+    <motion.li>
       <span className="flex items-center gap-1.5 py-1">
         {isFolder && node.nodes.length > 0 && (
           <button onClick={() => setIsOpen(!isOpen)} className="p-1 -m-1">
@@ -55,7 +55,7 @@ function FilesystemItem({ node }: { node: Node }) {
           </motion.ul>
         )}
       </AnimatePresence>
-    </li>
+    </motion.li>
   );
 }
 

@@ -1,78 +1,30 @@
 "use client";
 
-import FamilySigninModal, {
-  FamilyModalUsage,
-  PrimaryButton,
-} from "@/components/family-signin-modal";
-import { useState } from "react";
-import FirecrawlInput from "@/components/firecrawl-input";
-import { VercelHomepageNav } from "@/components/vercel-homapage-nav";
-import AppleCarousel from "@/components/apple-carousel";
-import { DraggableSidebar } from "@/components/draggable-sidebar";
-import Web3Cards from "@/components/web3-cards";
-import useScrollProgress from "@/hooks/use-scroll-progress";
-import IOSThemeSwitch from "@/components/ios-theme-switch";
-import { Carousel } from "@/components/carousel";
-import IOS26Switch from "@/components/ios26-switch";
-import Nav from "@/components/section/nav";
-import PendingWalletTransactions from "@/components/pending-wallet-transactions";
-import FileTree from "@/components/filetree";
-import AnimatedDock from "@/components/animated-dock";
+import PreviewCard from "@/components/section/prevew-card";
+import Tabs from "@/components/tabs";
+import { components } from "@/lib/constants";
 
 export default function Home() {
-  const { scrollProgress } = useScrollProgress();
-  const [open, setOpen] = useState(false);
-  const [isSwitchChecked, setIsSwitchChecked] = useState(false);
   return (
-    <div className="relative h-screen w-screen overflow-hidden overflow-y-scroll">
-      {/* <VercelDashboardNav scrollProgress={scrollProgress} /> */}
-      <Nav />
-
-      <div className="flex flex-col items-center justify-center h-screen w-screen">
-        <FileTree />
+    <div className="w-full h-[100vh] flex flex-col gap-18 items-start justify-start overflow-x-hidden">
+      <div className="flex flex-col items-start justify-start w-full gap-2 pt-12">
+        <h1 className="font-bold text-2xl">Firecomponents</h1>
+        <p>This is a collection of modern and unique components for Next.js</p>
       </div>
 
-      <div className="flex flex-col items-center justify-center h-screen w-screen">
-        <AnimatedDock />
-      </div>
-
-      <div className="flex flex-col items-center justify-center h-screen w-screen">
-        <Carousel />
-      </div>
-
-      <div className="flex flex-col items-center justify-center h-screen w-screen">
-        <PendingWalletTransactions />
-      </div>
-
-      <div className="flex flex-col items-center justify-center h-screen w-screen">
-        <IOS26Switch
-          checked={isSwitchChecked}
-          onCheckedChange={(checked) => setIsSwitchChecked(checked)}
-        />
-      </div>
-
-      <div className="flex flex-col items-center justify-center h-screen w-screen">
-        <Web3Cards />
-      </div>
-
-      {/* <DraggableSidebar>
-        <h1>hey</h1>
-      </DraggableSidebar> */}
-
-      <div className="flex flex-col items-center justify-center h-screen w-screen">
-        <AppleCarousel />
-      </div>
-
-      <div className="flex flex-col items-center justify-center h-screen w-screen">
-        <FamilyModalUsage />
-      </div>
-
-      <div className="flex flex-col items-center justify-center h-screen w-screen">
-        <FirecrawlInput />
-      </div>
-
-      <div className="flex flex-col items-center justify-center h-screen w-screen">
-        <VercelHomepageNav />
+      <div className="relative grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+        {components.map((component) => (
+          <PreviewCard
+            key={component.slug}
+            name={component.name}
+            description={component.description}
+            image={component.image}
+            slug={component.slug}
+            category={component.category}
+            date={component.date}
+            component={component.component}
+          />
+        ))}
       </div>
     </div>
   );
